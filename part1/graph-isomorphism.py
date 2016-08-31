@@ -47,7 +47,7 @@ class Prover(object):
         assert self.n == numVertices(G2)
 
         self.isomorphism = isomorphism
-        self.state = None
+        self.state = {}
 
     def sendIsomorphicCopy(self):
         isomorphism = randomPermutation(self.n)
@@ -55,11 +55,11 @@ class Prover(object):
 
         H = applyIsomorphism(self.G1, pi)
 
-        self.state = isomorphism
+        self.state[H] = isomorphism
         return H
 
-    def proveIsomorphicTo(self, graphChoice):
-        randomIsomorphism = self.state
+    def proveIsomorphicTo(self, H, graphChoice):
+        randomIsomorphism = self.state[H]
         piInverse = makeInversePermutationFunction(randomIsomorphism)
 
         if graphChoice == 1:
@@ -74,21 +74,22 @@ class Verifier(object):
         self.G1 = G1
         self.G2 = G2
         self.n = numVertices(G1)
+        self.state = {}
         assert self.n == numVertices(G2)
 
     def chooseGraph(self, H):
         choice = random.choice([1, 2])
-        self.state = H, choice
+        self.state[H] = choice
         return choice
 
-    def accepts(self, isomorphism):
+    def accepts(self, H, isomorphism):
         '''
             Return True if and only if the given isomorphism
             is a valid isomorphism between the randomly
             chosen graph in the first step, and the H presented
             by the Prover.
         '''
-        H, choice = self.state
+        choice = self.state[H]
         graphToCheck = [self.G1, self.G2][choice - 1]
         f = isomorphism
 
@@ -102,9 +103,9 @@ def runProtocol(G1, G2, isomorphism):
 
     H = p.sendIsomorphicCopy()
     choice = v.chooseGraph(H)
-    witnessIsomorphism = p.proveIsomorphicTo(choice)
+    witnessIsomorphism = p.proveIsomorphicTo(H, choice)
 
-    return v.accepts(witnessIsomorphism)
+    return v.accepts(H, witnessIsomorphism)
 
 
 def convinceBeyondDoubt(G1, G2, isomorphism, errorTolerance=1e-20):
@@ -123,7 +124,7 @@ def messagesFromProtocol(G1, G2, isomorphism):
 
     H = p.sendIsomorphicCopy()
     choice = v.chooseGraph(H)
-    witnessIsomorphism = p.proveIsomorphicTo(choice)
+    witnessIsomorphism = p.proveIsomorphicTo(H, choice)
 
     return [H, choice, witnessIsomorphism]
 
