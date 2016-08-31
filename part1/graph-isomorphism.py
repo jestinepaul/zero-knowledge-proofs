@@ -2,7 +2,7 @@ import random
 
 # a graph is a list of edges, and for simplicity we'll say
 # every vertex shows up in some edge
-exampleGraph = [
+exampleGraph = frozenset({
     (1, 2),
     (1, 4),
     (1, 3),
@@ -10,7 +10,7 @@ exampleGraph = [
     (2, 5),
     (3, 6),
     (5, 6)
-]
+})
 
 
 def numVertices(G):
@@ -32,7 +32,7 @@ def makeInversePermutationFunction(L):
 
 
 def applyIsomorphism(G, f):
-    return [(f(i), f(j)) for (i, j) in G]
+    return frozenset({(f(i), f(j)) for (i, j) in G})
 
 
 class Prover(object):
